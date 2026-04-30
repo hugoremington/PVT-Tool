@@ -1,27 +1,31 @@
-# PVT Tool
+# HVTools
 
-**PVT Tool** is a lightweight application for remote post verification testing and health monitoring of Windows servers.
+**HVTools** (formerly *VMM Tools*) is the swiss-army knife for SCVMM administrators. It is a lightweight application designed to perform a complete SCVMM inventory.
 
-It performs essential pre- and post-verification tests, including:
-* **Network:** DNS, Ping, and RDP connectivity.
-* **System:** OS drive status, System Uptime, and Boot Time.
-* **Services:** Service state and SMBv1 status.
-* **Hardware:** vCPU and Memory details.
+It reports crucial information about your SCVMM environment, including:
+* Clusters and Hosts
+* Virtual Machines
+* Storage Arrays and Storage Pools
+* Networks and VLANs
+* Workload health and much more
 
-This tool is essential for PVT (Post-Verification Testing) during server patching, disaster recovery (DR), ITIL change management, and general system testing.
+The elegant table views make it easy to use, find gaps, and identify improvements in your SCVMM environment. It is an excellent tool for gaining clearer insight, general troubleshooting, capacity planning, and reporting.
+
+> [!NOTE]  
+> This is the Public Edition (PE) of HVTools, as it was a minimum viable product (MvP) back in the day.
 
 ---
 
 ## Instructions
 
-1. **Single Target:** Enter a single target computer name in the first field and click **Run**.
-2. **Bulk Scanning:** Click **Browse** to select a text file containing multiple computer names, then click **Run**.
-3. **Results:** When the scan is complete, the PVT report will automatically pop up.
-4. **Exporting:** Click `File` $\rightarrow$ `Save As` to save the report as an **Excel CSV**.
-5. **Copy/Paste:** (Optional) Select desired rows and press `CTRL + C` to copy data directly into Excel.
+1. Enter SCVMM administrator privileged credentials in the **Username** and **Password** fields.
+2. Enter the SCVMM instance ID address in the third field (e.g., `scvmminstancefqdn.contoso.com`) and click **Login**.
+3. When the inventory is complete, the HVTools report will automatically open.
+4. You can click `File` $\rightarrow$ `Save As` to save the complete inventory to an **Excel CSV**.
+5. **Optional:** By selecting desired rows and performing `CTRL + C`, you can copy/paste data directly into Excel.
 
 > [!NOTE]  
-> Designed for **Microsoft Windows domain systems**. May also function on Linux systems.
+> Designed for **Microsoft System Center Virtual Machine Manager 2016**.
 
 ---
 
@@ -29,110 +33,95 @@ This tool is essential for PVT (Post-Verification Testing) during server patchin
 
 ## To Do
 
-1. Incorporate all system disk(s) scanning.
-2. Make system disk reporting dynamic, creating columns as required. Change from static.
+1. Change table column creation to using arrays and foreach loops for elegant creation.
+2. HTML reporting.
+3. Colourisation (Red-Amber-Green)
+4. (Optional) ServiceNow integration using service hooks.
 
 > [!NOTE]  
-> These fixes were incorporated in the proprietary edition of PVT Tools back in the. I will need to add it in the public release.
+> There additional features were incorporated into the propietary edition v2.0.0 of HVTools back in 2024.
 
 ---
 
 ## Changelog
 
-### v1.6.8
+### v1.7.3
 - Codesigned compiled file using Sectigo certificate.
-- Added clipboard copy/paste feature: select rows and use `CTRL + C` to paste into Excel.
-- Updated OS information capture by replacing WMI calls with **CIM**.
+- Added VMM server name to title bar form of report.
+- Removed empty `var filename`.
+- Fixed tab name to **Cluster Storage Volumes**.
+- Clipboard copy/paste will now include headers.
 
-### v1.6.5
-- Fixed system boot time values; optimized by recycling existing values and `Invoke-Command` to reduce overhead.
-
-### v1.6.4
-- Fixed **About** page.
+### v1.7.2
+- Enabled datagrid clipboard `CTRL + C` of selected rows (configured `RunspacePool` apartmentState as `STA`).
 - Removed redundant 2nd form `runspace.close` calls.
 
-### v1.6.3
+### v1.7.1
 - Fixed exit bug where runspaces would keep the process open; app now exits cleanly.
+- Fixed bug where the **Login** button would remain disabled post-inventory completion.
+- **New Feature:** Added **Zombie VHDs** tab to report orphaned VHD/VHDX files in SCVMM.
+
+### v1.7.0
+- Appended new column `Location` in Virtual Machines table (contains VHD/VHDX path).
+- Removed automatic export of Virtual Machines table.
+
+### v1.6.9
+- ZIP multi-report saving finalized; added cleanup feature.
+- Rounded off all numbers to a single decimal point.
+- Added experimental **Save to ZIP** feature. Exports all tables into a temp path before ZIPing to the desired save path via dialog.
+
+### v1.6.8
+- **New Feature:** Added **Cluster storage volumes** tab (position 7).
+
+### v1.6.7
+- Removed `$script:powershell = [powershell]::Create()` from line 2322.
+
+### v1.6.6
+- Cosmetic update: Rounded large capacity numbers to 2 decimal places using `[math]::Round($var,2)`.
+
+### v1.6.5
+- Cosmetic update: Added **About/Help** menu in 2nd results form.
+- Added reset counter for clusters `$c` in `ClusterNetworks` foreach loop.
+
+### v1.6.4
+- Added tab filter for all 8 datagrids.
+
+### v1.6.3
+- **Major Update:** Added Clusters, Hosts, Storage Pools, Storage Arrays, Cluster Disks, Networks, and Cluster Networks!
 
 ### v1.6.2
-- Removed `$script:powershell = [powershell]::Create()` from line 1033.
-- Added **System Uptime/Boot Time** feature.
+- Added **Hosts** feature (including data table, tab, foreach loop, and data grid).
+- Re-enabled `maxthreads` to all available processor count on system.
+- **New Feature:** Added **Cluster Info** (2nd table for Clusters).
+
+### v1.6.1
+- Fixed unprotected memory exceptions by removing `Add-OutputBoxLine` calls within `ForEach` loops (preventing RichTextBox overload).
+
+### v1.6.0
+- Added more tables and tabs for comprehensive information including clusters, hosts, storage, and networks.
 
 ### v1.5.9
-- Improved reliability: Appended `| Wait-Job -Timeout 11` after every `Invoke-Command` to prevent hanging on non-responsive WinRM servers.
-
-### v1.5.8
-- Attempted to resolve potential unprotected memory errors by calling `$script:powershell.EndInvoke($script:handle)` at every exit function.
-- Applied various GUI fixes, including anchoring.
-
-### v1.5.7
-- Fixed views; enabled **Search Filter** (Textbox1) to appear correctly in Tab view.
-- Fixed `Datagridview` and Tab control sizing (horizontal and vertical scrollbars now appear).
+- Attempted to resolve unprotected memory leak by calling `$script:powershell.EndInvoke($script:handle)` at every exit function.
+- Changed `$maxthreads` to `3` to resolve unprotected memory exceptions.
+- Added extra tabs in preparation for future releases.
+- Re-enabled `maxthreads`.
+- Updated color scheme.
 
 ### v1.5.6
-- Removed **Save File Confirm-Overwrite** feature (resolved crash on Server 2012).
-- Resolved missing scrollbars in both Tab control and Data Grid View.
-
-### v1.5.4
-- Fixed Runspace garbage collection on completion and exit.
-
-### v1.5.3
-- Improved logic to properly close runspaces following successful completion.
-
-### v1.5.2
-- Attempted to suppress `Test-NetConnection` progress output.
-
-### v1.5.1
-- **Compatibility:** Made runspace sessions compatible with PowerShell versions older than 5.1 (tested on PS 4.0).
-- **Performance:** GUI no longer freezes; implemented multi-threading via **Runspace Pools** optimized for the system's processor count.
-- **UI:** Updated UI slightly and added a manual **Save As** feature.
+- Attempted to resolve memory leak by casting `$VMS` to an array.
+- Fixed VLAN display issue by changing column type from `Int32` to `String`.
+- Reduced `$maxthreads` to static `3` to prevent crashes during multi-user RDP sessions.
+- Enhanced GUI, streamlined tab view, and changed datagridview color to `moccasin`.
+- Fixed 2nd form color.
+- Fixed minor bugs regarding table column types (Memory, Dynamic Memory, and vCPU).
+- **Major GUI updates:** Converted array to Data Grid View and code-signed the application using Sectigo certificate.
 
 ### v1.5.0
-- Major bug fixes and feature additions.
-
-### v1.4.0
-- Implemented **Runspace Pools**.
-- Minor bug fixes (missing variables, etc.).
-- Added `Add-OutputBox` function in runspace code.
-
-### v1.3.3
-- Updated 2nd GUI with a new color scheme, search filter bar, and close button.
-- Optimized 2nd form sizing.
-- Added a 2nd form (Tab control and Data Grid View) at the end of the `RunAppCode` function.
-
-### v1.3.1
-- Switched to `New-Object System.Data.DataTable` instead of traditional PS arrays.
-- Added a "Xmas" easter egg.
-
-### v1.3.0
-- Added a **Progress Bar**.
-- Added **WinRM check** (continues if running, stops if not).
-- Implemented **Fast PING** in `$script1`.
-- Added FQDN support within runspaces.
-- Fixed runspace issues via `AddScript` within `ForEach` loops.
-
-### v1.2.9a (Beta)
-- Implementation of Runspaces (Phase 1).
-
-### v1.2.8e
-- Added primitive loading progress using `.` in output windows.
-- Grayed out **Browse** button during code execution.
-- Improved job handling to hide windows.
-- Optimized scripts by using `-AsJob` with `Invoke-Command`.
-
-### v1.2.7
-- **Major Update:**
-    - Added single computer/server PVT feature via textbox.
-    - Added **SMBv1 status checks** (Windows Server 2012 R2 and up).
-    - Added version detection and output box colorization.
-    - Added NIC DNS server configuration feature.
-    - Improved RDP port logic to improve overall app performance.
-    - Added vCPU and Memory features.
-    - Improved Ping function for Windows Desktop OS compatibility.
-    - Fixed drive free space reporting on unreachable hosts.
-    - Added IP Address, Default Gateway, and Subnet Mask details.
-    - Added C:\ Drive capacity and free percentage reporting.
-    - Codesigned and timestamped (10-Sep-2021).
+- Implemented multi-threading via **Runspace Pools**.
+- Added **Out-Grid** GUI view.
+- Performance improvements.
+- Switched to using Arrays instead of flat memory.
+- Added static/dynamic memory optimizations.
 
 ---
 
